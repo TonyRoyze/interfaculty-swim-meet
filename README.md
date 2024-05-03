@@ -1,3 +1,5 @@
+<<<<<<< ours
+=======
 # Aqua Slash
 
 ## Description
@@ -60,3 +62,4 @@ npm install
 ```bash
 npm start
 ```
+>>>>>>> theirs
