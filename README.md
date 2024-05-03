@@ -13,9 +13,12 @@ The Interfaculty Swimming Meet Leaderboard is an online platform designed to tra
 ## Features
 
 - **Real-time Leaderboard**: Displays current standings and results of the swimming competitions.
+  ![dashboard](./src/res/dashboard.jpeg)
 - **Responsive Design**: Accessible on desktop, tablet, and mobile devices.
+  ![event-leaderboard](./src/res/eventleaderboard_mobile.jpeg)
+  ![faculty-leaderboard](./src/res/facultyleaderboard_mobile.jpeg)
 
-  ![dashboard](./dashboard.jpeg)
+
 
 ## Technologies Used
 
