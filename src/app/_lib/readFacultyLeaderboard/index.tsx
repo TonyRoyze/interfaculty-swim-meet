@@ -1,8 +1,8 @@
 export const fetchFacultyLeaderboardData = async () => {
     try {
-        const res = await fetch("https://script.googleusercontent.com/macros/echo?user_content_key=-4bBHk2Vlr9jLhaRfB8zbTWczK6urAHk_Vhu0JOnUeGKDigKARf_ItZ0AqlbWvaLrqYlh1smfZnCcNAfl6FGtjBtAzGjbST8m5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnBOdkMsABEe2q5Sr9YHdUJTLD4nHyP6xe_TF0c5F7I6orYSbKcrDJ26cQiE-Ur7DtL_mCvKrfUwy2vpZ9d57ib0wMbBwNU5Kaw&lib=M8PlsH9Q1J1ugY6fQdW57yK6t_ZkxQVm5",
-            {next: {revalidate: 300}});
-        const {facultyLeaderboard} = await res.json();
+        const url = `https://script.google.com/macros/s/AKfycbxGneTdRxUksYri3plBFoCSGOWW46V6v4po634ylEx7AQEd2H0TWJzlbXdgPPRaizx8/exec?timestamp=${new Date().getTime()}`; // Added timestamp
+        const res = await fetch(url, { next: { revalidate: 300 } });
+        const { facultyLeaderboard } = await res.json();
         return facultyLeaderboard;
     }
     catch (error) {
