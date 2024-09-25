@@ -25,9 +25,9 @@ interface Relay {
     time: string,
 }
 
-export async function EventLeaderboard({type, eventName}:EventLeaderboardProps) {
+export async function EventLeaderboard({ type, eventName }: EventLeaderboardProps) {
 
-    const data: (Event[] | Relay[]) = await fetchEventLeaderboardData({type: type, event: eventName});
+    const data: (Event[] | Relay[]) = await fetchEventLeaderboardData({ type: type, event: eventName });
 
     const isEvent = Array.isArray(data) && data.length > 0 && 'name' in data[0];
 
