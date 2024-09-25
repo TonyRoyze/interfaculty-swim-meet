@@ -1,16 +1,88 @@
-export const fetchFacultyLeaderboardData = async () => {
-    try {
-        const url = `https://script.google.com/macros/s/AKfycbxGneTdRxUksYri3plBFoCSGOWW46V6v4po634ylEx7AQEd2H0TWJzlbXdgPPRaizx8/exec?timestamp=${new Date().getTime()}`; // Added timestamp
-        const res = await fetch(url, { next: { revalidate: 300 } });
-        const { facultyLeaderboard } = await res.json();
-        return facultyLeaderboard;
-    }
-    catch (error) {
-        console.error('Error fetching data:', error);
-        return [];
-    }
-}
+const data = {
+    facultyLeaderboard: [
+        {
+            name: "FIM",
+            points: {
+                men: 91,
+                women: 12,
+                overall: 103,
+            },
+        },
+        {
+            name: "FMF",
+            points: {
+                men: 85,
+                women: 71,
+                overall: 156,
+            },
+        },
+        {
+            name: "FOA",
+            points: {
+                men: 10,
+                women: 10,
+                overall: 20,
+            },
+        },
+        {
+            name: "FOL",
+            points: {
+                men: 39,
+                women: 30,
+                overall: 69,
+            },
+        },
+        {
+            name: "FOM",
+            points: {
+                men: 36,
+                women: 37,
+                overall: 73,
+            },
+        },
+        {
+            name: "FON",
+            points: {
+                men: 15,
+                women: 17,
+                overall: 0,
+            },
+        },
+        {
+            name: "FOS",
+            points: {
+                men: 4,
+                women: 8,
+                overall: 12,
+            },
+        },
+        {
+            name: "FOT",
+            points: {
+                men: 6,
+                women: 9,
+                overall: 15,
+            },
+        },
+    ],
+};
 
+export const fetchFacultyLeaderboardData = async () => {
+    return data.facultyLeaderboard;
+};
+
+// export const fetchFacultyLeaderboardData = async () => {
+//     try {
+//         const url = `https://script.google.com/macros/s/AKfycbxGneTdRxUksYri3plBFoCSGOWW46V6v4po634ylEx7AQEd2H0TWJzlbXdgPPRaizx8/exec?timestamp=${new Date().getTime()}`; // Added timestamp
+//         const res = await fetch(url, { next: { revalidate: 300 } });
+//         const { facultyLeaderboard } = await res.json();
+//         return facultyLeaderboard;
+//     }
+//     catch (error) {
+//         console.error('Error fetching data:', error);
+//         return [];
+//     }
+// }
 
 /*export const fetchFacultyLeaderboardData = async () => {
 
