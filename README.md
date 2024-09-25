@@ -1,5 +1,3 @@
-<<<<<<< ours
-=======
 # Aqua Slash
 
 ## Description

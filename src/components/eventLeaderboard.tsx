@@ -6,8 +6,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import {Badge} from "@/components/ui/badge";
-import {fetchEventLeaderboardData} from "@/app/_lib/readEventLeaderboard";
+import { Badge } from "@/components/ui/badge";
+import { fetchEventLeaderboardData } from "@/app/_lib/readEventLeaderboard";
 
 interface EventLeaderboardProps {
     type: 'men' | 'women';
