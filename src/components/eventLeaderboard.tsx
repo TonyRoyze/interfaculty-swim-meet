@@ -29,7 +29,7 @@ export async function EventLeaderboard({
   type,
   eventName,
 }: EventLeaderboardProps) {
-  const event = eventName.split(" ")[0];
+  const event = eventName === "" ? eventName.split(" ")[0] : eventName;
   const data: Event[] | Relay[] = await fetchEventLeaderboardData({
     type,
     event,

@@ -48,32 +48,3 @@ export const fetchEventLeaderboardData = async ({
 
   return result;
 };
-
-// export const fetchEventLeaderboardData = async ({
-//   type,
-//   event = "100free",
-// }: EventLeaderboardProps) => {
-//   try {
-//     const url = `https://script.google.com/macros/s/AKfycbxGneTdRxUksYri3plBFoCSGOWW46V6v4po634ylEx7AQEd2H0TWJzlbXdgPPRaizx8/exec?timestamp=${new Date().getTime()}`; // Added timestamp
-//     const res = await fetch(url, { next: { revalidate: 300 } });
-
-//     const { events } = await res.json();
-
-//     return type === "men" ? events[`M${event}`] : events[`W${event}`];
-//   } catch (error) {
-//     console.error("Error fetching data:", error);
-//     return [];
-//   }
-// };
-
-// export const fetchEventLeaderboardData = async ({ type, event = "100free" }: EventLeaderboardProps) => {
-//     try {
-//     superbase.init('https://superbase.io/api/v1/1c5c0f0c-d0a2-4d3c-b4f6-c2a0e8c8d1d2');
-//     const res = await superbase.get(`/events/${type}/${event}`);
-//     return res.data;
-//     }
-//     catch (error) {
-//         console.error('Error fetching data:', error);
-//         return [];
-//     }
-// }
