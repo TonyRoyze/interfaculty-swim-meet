@@ -60,7 +60,7 @@ export async function EventLeaderboard({
       <TableBody>
         {Array.isArray(data) ? ( // Check if data is an array
           data.map((event, index) => (
-            <TableRow key={index}>
+            <TableRow key={index.valueOf()}>
               <TableCell className="px-3 text-xs flex justify-center md:justify-start md:text-sm md:px-6">
                 {index + 1}
               </TableCell>

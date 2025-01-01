@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -59,4 +61,10 @@
     body {
         @apply bg-background text-foreground;
     }
+}
+
+.la-belle-aurore-regular {
+    font-family: "La Belle Aurore", cursive;
+    font-weight: 400;
+    font-style: normal;
 }
