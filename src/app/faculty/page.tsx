@@ -1,11 +1,62 @@
+'use client'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
 import { FacultyLeaderboard } from "@/components/facultyleaderboard2";
-import { resultdata as data } from "@/constants";
+import { supabase } from "@/lib/supabase"; ``
+import { FACULTY_OPTIONS } from "@/types/constants";
+import { useState, useEffect } from "react";
 
-// import {fetchFacultyLeaderboardData} from "@/app/_lib/readFacultyLeaderboard";
+
 
 export default function Home() {
+
+    const [overallPoints, setOverallPoints] = useState<any[]>([]);
+    const [menPoints, setMenPoints] = useState<any[]>([]);
+    const [womenPoints, setWomenPoints] = useState<any[]>([]);
+    const fetchData = async () => {
+
+        const { data, error } = await supabase
+            .from('swims')
+            .select('*')
+
+        if (error) {
+            console.error('Error fetching data:', error)
+            return
+        }
+
+        const overallData = FACULTY_OPTIONS.map(faculty => ({
+            name: faculty.key,
+            points: data
+                .filter(item => item.faculty_id === faculty.id)
+                .reduce((sum, item) => sum + (item.points || 0), 0)
+        })).sort((a, b) => b.points - a.points);
+
+        setOverallPoints(overallData)
+
+        const menData = FACULTY_OPTIONS.map(faculty => ({
+            name: faculty.key,
+            points: data
+                .filter(item => item.faculty_id === faculty.id && item.event_id > 16)
+                .reduce((sum, item) => sum + (item.points || 0), 0)
+        })).sort((a, b) => b.points - a.points);
+
+        setMenPoints(menData)
+
+
+        const womenData = FACULTY_OPTIONS.map(faculty => ({
+            name: faculty.key,
+            points: data
+                .filter(item => item.faculty_id === faculty.id && item.event_id <= 16)
+                .reduce((sum, item) => sum + (item.points || 0), 0)
+        })).sort((a, b) => b.points - a.points);
+
+        setWomenPoints(womenData)
+
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
     return (
         <div className="flex flex-col">
             <Header />
@@ -18,13 +69,13 @@ export default function Home() {
                             <TabsTrigger className="text-xs md:text-sm" value="women">Women</TabsTrigger>
                         </TabsList>
                         <TabsContent value="overall">
-                            <FacultyLeaderboard data={data.facultyLeaderboard} type="overall" />
+                            <FacultyLeaderboard data={overallPoints} type="overall" leaderboard="overall" />
                         </TabsContent>
                         <TabsContent value="men">
-                            <FacultyLeaderboard data={data.facultyLeaderboard} type="men" />
+                            <FacultyLeaderboard data={menPoints} type="men" leaderboard="overall" />
                         </TabsContent>
                         <TabsContent value="women">
-                            <FacultyLeaderboard data={data.facultyLeaderboard} type="women" />
+                            <FacultyLeaderboard data={womenPoints} type="women" leaderboard="overall" />
                         </TabsContent>
                     </Tabs>
                 </div>

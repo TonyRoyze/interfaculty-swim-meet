@@ -17,7 +17,7 @@ import { resultdata } from "@/constants";
 interface FacultyLeaderboardProps {
     type?: 'overall' | 'men' | 'women';
     leaderboard: 'event' | 'overall'
-    selectedEvent: string
+    selectedEvent?: string
     data?: any[]
 }
 

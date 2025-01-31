@@ -33,8 +33,6 @@ export default function Home() {
                 .reduce((sum, item) => sum + (item.points || 0), 0)
         })).sort((a, b) => b.points - a.points);
 
-        console.log("Fetched faculty points", facultyPoints)
-
         setOverallPoints(facultyPoints)
     }
 

@@ -14,37 +14,7 @@ export default function Home() {
     const handleEventSelect = (value: string) => {
         setSelectedEvent(value.replace(/^[MW]/, ""))
     }
-    const [menResults, setMenResults] = useState<Event[] | Relay[]>([])
-    const [womenResults, setWomenResults] = useState<Event[] | Relay[]>([])
 
-    useMemo(() => {
-        const menEvent = `M${selectedEvent}` as keyof typeof data.events
-        const womenEvent = `W${selectedEvent}` as keyof typeof data.events
-
-        setMenResults(
-            data.events[menEvent]?.map((result, index) => ({
-                id: `men-${index}`,
-                ...result,
-                points: 0,
-            })) || [],
-        )
-
-        setWomenResults(
-            data.events[womenEvent]?.map((result, index) => ({
-                id: `women-${index}`,
-                ...result,
-                points: 0,
-            })) || [],
-        )
-    }, [selectedEvent])
-
-    const handleMenDataChange = (newData: Event[] | Relay[]) => {
-        setMenResults(newData)
-    }
-
-    const handleWomenDataChange = (newData: Event[] | Relay[]) => {
-        setWomenResults(newData)
-    }
     return (
         <div className="flex flex-col">
             <Header />
