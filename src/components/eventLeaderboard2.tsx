@@ -57,8 +57,16 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
         return
       }
 
-      const dataWithPoints = calculatePoints(data)
-      setResults(dataWithPoints)
+
+      const sortedData = [...data].sort((a, b) => {
+        const timeA = a.time.split(":").reduce((acc: number, time: string) => acc * 60 + parseFloat(time), 0);
+        const timeB = b.time.split(":").reduce((acc: number, time: string) => acc * 60 + parseFloat(time), 0);
+        return timeA - timeB
+      })
+
+      const dataWithPoints = calculatePoints(sortedData);
+      setResults(dataWithPoints);
+
 
       const facultyPoints = FACULTY_OPTIONS.map(faculty => ({
         name: faculty.key,
@@ -106,17 +114,16 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
   }
 
   const handleRemove = async (id: string) => {
-    if (typeof id === 'string') {
-      const updatedResults = results.filter(item => item.id !== id)
-      setResults(updatedResults)
-    }
-    else {
+    const updatedResults = results.filter(item => item.id !== id)
+    setResults(updatedResults)
+    if (typeof id === 'number') {
       const { error } = await supabase
         .from('swims')
         .delete()
         .eq('id', id)
       if (error) throw error
     }
+
 
   }
 
@@ -166,6 +173,14 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
         .filter(item => item.faculty_id === faculty.id)
         .reduce((sum, item) => sum + (item.points || 0), 0)
     })).sort((a, b) => b.points - a.points);
+
+    //TODO: update points for faculty
+
+    //   const sortedData = [...results].sort((a, b) => {
+    //     const timeA = a.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
+    //     const timeB = b.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
+    //     return timeA - timeB
+    // })
 
     if (setPoints) {
       setPoints(facultyPoints);
@@ -248,8 +263,7 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
         </Table>
       </DndContext>
       {editMode && (
-        <Button variant="outline" onClick={handleAdd} className="mt-4">
-          {/* <Button variant="outline" className="mt-4"> */}
+        <Button variant="outline" onClick={handleAdd} className="mt-4 md:text-sm">
           <Plus className="h-4 w-4 mr-2" />Add
         </Button>
       )}

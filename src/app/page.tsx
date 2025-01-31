@@ -1,12 +1,9 @@
 "use client"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventLeaderboard } from "@/components/eventLeaderboard2";
 import Header from "@/components/header";
 import { EventSelector } from "@/components/eventselector";
-import { Event, Relay } from "@/types/events";
-import { resultdata as data } from "@/constants";
-import { supabase } from '@/lib/supabase'
 
 
 export default function Home() {

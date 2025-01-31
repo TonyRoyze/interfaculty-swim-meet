@@ -1,4 +1,4 @@
-import { type ClassValue, clsx } from "clsx"
+import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 import { Event } from "@/types/events"
@@ -7,7 +7,6 @@ import { EVENTS } from "@/types/constants"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
-
 export const calculatePoints = (sortedData: Event[]): Event[] => {
   // Check if event is relay by looking at the first event's event_id
   const isRelay = sortedData[0]?.event_id ?
