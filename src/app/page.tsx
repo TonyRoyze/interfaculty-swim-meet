@@ -16,7 +16,7 @@ export default function Home() {
         <div className="flex flex-col">
             <Header />
             <main className="flex flex-1 gap-4 overflow-auto p-4">
-                <div className="flex w-full max-w-2xl h-fit flex-col rounded-xl bg-muted/50 p-4">
+                <div className="flex w-full max-w-3xl h-fit flex-col rounded-xl bg-muted/50 p-4">
                     <EventSelector selectedEvent={selectedEvent} onEventSelect={handleEventSelect} />
                     <Tabs defaultValue="men" className="relative">
                         <TabsList className="justify-evenly">
