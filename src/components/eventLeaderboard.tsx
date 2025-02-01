@@ -194,14 +194,14 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
             return timeA - timeB
         })
 
-        const dataWithPoints = calculatePoints(results)
+        const dataWithPoints = calculatePoints(sortedData)
         setResults(dataWithPoints)
         setEditMode(false)
     }
 
     return (
         <div>
-            <div className="absolute top-0 right-0 space-x-2">
+            <div className="absolute top-0 right-0 space-x-2 md:text-sm">
                 {editMode ? (
                     <>
                         <Button variant="outline" onClick={handleSaveChanges}>
@@ -302,7 +302,6 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
                                 <TableCell className="px-2 text-xs md:text-sm md:px-4">
                                     {editMode ? (
                                         <Button variant="ghost" size="sm" onClick={() => handleRemove(event.id)}>
-                                            {/* <Button variant="ghost" size="sm"> */}
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     ) : (
@@ -321,8 +320,7 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
                 </TableBody>
             </Table>
             {editMode && (
-                <Button variant="outline" onClick={handleAdd} className="mt-4">
-                    {/* <Button variant="outline" className="mt-4"> */}
+                <Button variant="outline" onClick={handleAdd} className="mt-4 md:text-sm">
                     <Plus className="h-4 w-4 mr-2" />Add
                 </Button>
             )}
