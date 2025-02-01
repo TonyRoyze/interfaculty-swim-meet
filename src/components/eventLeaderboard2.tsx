@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Plus, Edit, Save, Upload, Factory } from "lucide-react"
-import { Event } from "@/types/events"
+import { Event, Points } from "@/types/events"
 import { calculatePoints } from "@/lib/utils"
 import { FACULTY_OPTIONS, EVENTS } from "@/types/constants"
 import { supabase } from "@/lib/supabase"
@@ -30,63 +30,32 @@ import { SortableTableRow } from "./SortableTableRow"
 
 interface EventLeaderboardProps {
   selectedEvent: string,
-  type: 'men' | 'women',
-  setPoints?: React.Dispatch<React.SetStateAction<any[]>>
+  results: Event[],
+  allResults: Event[],
+  overallPoints: Points[],
+  setResults: React.Dispatch<React.SetStateAction<Event[]>>
+  setEventPoints?: React.Dispatch<React.SetStateAction<Points[]>>
+  setOverallPoints?: React.Dispatch<React.SetStateAction<Points[]>>
 }
 
-export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeaderboardProps) {
+export function EventLeaderboard({ selectedEvent, allResults, results, setResults, setEventPoints, overallPoints, setOverallPoints }: EventLeaderboardProps) {
   const isEvent = !selectedEvent.includes('relay');
   const [editMode, setEditMode] = useState(false)
-  const [results, setResults] = useState<Event[]>([])
-
 
   useEffect(() => {
-    const fetchData = async () => {
-      const eventId = type == 'men'
-        ? EVENTS.find((event) => event.key === `M${selectedEvent}`)?.id
-        : EVENTS.find((event) => event.key === `W${selectedEvent}`)?.id;
-
-      const { data, error } = await supabase
-        .from('swims')
-        .select('*')
-        .eq('event_id', eventId)
-        .order('time', { ascending: true })
-
-      if (error) {
-        console.error('Error fetching data:', error)
-        return
-      }
-
-
-      const sortedData = [...data].sort((a, b) => {
-        const timeA = a.time.split(":").reduce((acc: number, time: string) => acc * 60 + parseFloat(time), 0);
-        const timeB = b.time.split(":").reduce((acc: number, time: string) => acc * 60 + parseFloat(time), 0);
-        return timeA - timeB
-      })
-
-      const dataWithPoints = calculatePoints(sortedData);
-      setResults(dataWithPoints);
-
-
-      const facultyPoints = FACULTY_OPTIONS.map(faculty => ({
-        name: faculty.key,
-        points: dataWithPoints
-          .filter(item => item.faculty_id === faculty.id)
-          .reduce((sum, item) => sum + (item.points || 0), 0)
-      })).sort((a, b) => b.points - a.points); // Sort in descending order based on points
-
-
-      if (setPoints) {
-        setPoints(facultyPoints);
-      }
+    const facultyPoints = FACULTY_OPTIONS.map(faculty => ({
+      name: faculty.key,
+      points: results
+        .filter(item => item.faculty_id === faculty.id)
+        .reduce((sum, item) => sum + (item.points || 0), 0)
+    })).sort((a, b) => b.points - a.points);
+    if (setEventPoints) {
+      setEventPoints(facultyPoints);
     }
-    fetchData()
-  }, [selectedEvent, type, setPoints])
+  }, [results]);
 
   const handleAdd = async () => {
-    const eventId = type === 'men'
-      ? EVENTS.find((event) => event.key === `M${selectedEvent}`)?.id
-      : EVENTS.find((event) => event.key === `W${selectedEvent}`)?.id
+    const eventId = results[0].event_id;
 
     const newRow = {
       id: crypto.randomUUID(),
@@ -110,6 +79,7 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
         [field]: value
       };
       setResults(updatedResults);
+      console.log('updatedResults', updatedResults);
     }
   }
 
@@ -123,14 +93,12 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
         .eq('id', id)
       if (error) throw error
     }
-
-
   }
 
   const handleSubmit = async () => {
     try {
       for (const item of results) {
-
+        console.log('item', item)
         if (typeof item.id === 'string') {
           const { error } = await supabase
             .from('swims')
@@ -155,6 +123,7 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
             })
             .eq('id', item.id)
           if (error) throw error
+          console.log('int', item)
         }
       }
       setEditMode(false)
@@ -182,9 +151,26 @@ export function EventLeaderboard({ selectedEvent, type, setPoints }: EventLeader
     //     return timeA - timeB
     // })
 
-    if (setPoints) {
-      setPoints(facultyPoints);
+    if (setEventPoints) {
+      setEventPoints(facultyPoints);
     }
+
+    if (setOverallPoints) {
+      const eventId = results[0].event_id;
+      const filteredEvents = allResults.filter(item => item.event_id !== eventId);
+      const updatedEvents = [...filteredEvents, ...dataWithPoints];
+
+      const overallFacultyPoints = FACULTY_OPTIONS.map(faculty => ({
+        name: faculty.key,
+        points: updatedEvents
+          .filter(item => item.faculty_id === faculty.id)
+          .reduce((sum, item) => sum + (item.points || 0), 0)
+      })).sort((a, b) => b.points - a.points);
+
+      setOverallPoints(overallFacultyPoints);
+
+    }
+
 
     setEditMode(false);
   };
