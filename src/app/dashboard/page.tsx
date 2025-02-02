@@ -13,7 +13,7 @@ import { Points, Event } from "@/types/events"
 
 export default function Home() {
     const [selectedEvent, setSelectedEvent] = useState("25free");
-    const [menPoint, setMenPoints] = useState<Points[]>([]);
+    const [menPoints, setMenPoints] = useState<Points[]>([]);
     const [womenPoints, setWomenPoints] = useState<Points[]>([]);
     const [eventPoints, setEventPoints] = useState<Points[]>([]);
     const [overallPoints, setOverallPoints] = useState<Points[]>([]);
@@ -47,22 +47,22 @@ export default function Home() {
 
         setOverallPoints(facultyPoints);
 
-        // const menPoints = FACULTY_OPTIONS.map(faculty => ({
-        //     name: faculty.key,
-        //     points: data
-        //         .filter(item => item.faculty_id === faculty.id && item.event_id === menEventId)
-        //         .reduce((sum, item) => sum + (item.points || 0), 0)
-        // })).sort((a, b) => b.points - a.points);
+        const menPoints = FACULTY_OPTIONS.map(faculty => ({
+            name: faculty.key,
+            points: data
+                .filter(item => item.faculty_id === faculty.id && item.event_id > 16)
+                .reduce((sum, item) => sum + (item.points || 0), 0)
+        })).sort((a, b) => b.points - a.points);
 
-        // setMenPoints(menPoints)
+        setMenPoints(menPoints)
 
-        // const womenPoints = FACULTY_OPTIONS.map(faculty => ({
-        //     name: faculty.key,
-        //     points: data
-        //         .filter(item => item.faculty_id === faculty.id && item.event_id === womenEventId)
-        //         .reduce((sum, item) => sum + (item.points || 0), 0)
-        // })).sort((a, b) => b.points - a.points);
-        // setWomenPoints(womenPoints)
+        const womenPoints = FACULTY_OPTIONS.map(faculty => ({
+            name: faculty.key,
+            points: data
+                .filter(item => item.faculty_id === faculty.id && item.event_id <= 16)
+                .reduce((sum, item) => sum + (item.points || 0), 0)
+        })).sort((a, b) => b.points - a.points);
+        setWomenPoints(womenPoints)
 
         const menResults = data.filter(item => item.event_id === menEventId);
         setMenResults(menResults);
@@ -89,6 +89,7 @@ export default function Home() {
                         <TabsContent value="men">
                             <EventLeaderboard
                                 selectedEvent={selectedEvent}
+                                // type="men"
                                 results={menResults}
                                 allResults={allResults}
                                 setResults={setMenResults}
@@ -100,6 +101,7 @@ export default function Home() {
                         <TabsContent value="women">
                             <EventLeaderboard
                                 selectedEvent={selectedEvent}
+                                // type="women"
                                 results={womenResults}
                                 allResults={allResults}
                                 setResults={setWomenResults}
@@ -114,10 +116,18 @@ export default function Home() {
                     <Tabs defaultValue="event">
                         <TabsList className="justify-evenly">
                             <TabsTrigger className="text-xs md:text-sm" value="overall">Overall</TabsTrigger>
+                            <TabsTrigger className="text-xs md:text-sm" value="men">Men</TabsTrigger>
+                            <TabsTrigger className="text-xs md:text-sm" value="women">Women</TabsTrigger>
                             <TabsTrigger className="text-xs md:text-sm" value="event">Event</TabsTrigger>
                         </TabsList>
                         <TabsContent value="overall">
                             <FacultyLeaderboard leaderboard="event" selectedEvent={selectedEvent} data={overallPoints} />
+                        </TabsContent>
+                        <TabsContent value="men">
+                            <FacultyLeaderboard leaderboard="event" selectedEvent={selectedEvent} data={menPoints} />
+                        </TabsContent>
+                        <TabsContent value="women">
+                            <FacultyLeaderboard leaderboard="event" selectedEvent={selectedEvent} data={womenPoints} />
                         </TabsContent>
                         <TabsContent value="event">
                             <FacultyLeaderboard leaderboard="event" selectedEvent={selectedEvent} data={eventPoints} />

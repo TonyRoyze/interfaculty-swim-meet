@@ -13,6 +13,8 @@ export const calculatePoints = (sortedData: Event[]): Event[] => {
     EVENTS.find(e => e.id === sortedData[0].event_id)?.key.toLowerCase().includes('relay') :
     false;
 
+  // console.log(isRelay);
+
   const pointsArray = isRelay ? [10, 7, 5, 4, 3, 2, 1] : [7, 5, 4, 3, 2, 1]
 
   const timeGroups: { [key: string]: Event[] } = {}

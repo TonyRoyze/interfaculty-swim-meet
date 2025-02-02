@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Save, Upload, Factory } from "lucide-react"
+import { Plus, Edit, Save, Upload } from "lucide-react"
 import { Event, Points } from "@/types/events"
 import { calculatePoints } from "@/lib/utils"
-import { FACULTY_OPTIONS, EVENTS } from "@/types/constants"
+import { FACULTY_OPTIONS } from "@/types/constants"
 import { supabase } from "@/lib/supabase"
 import {
   DndContext,
@@ -23,16 +23,14 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 
-import { EventTableHeader } from "./EventTableHeader"
-import { SortableTableRow } from "./SortableTableRow"
-
-
+import { EventTableHeader } from "./eventTableHeader"
+import { SortableTableRow } from "./sortableTableRow"
 
 interface EventLeaderboardProps {
   selectedEvent: string,
   results: Event[],
-  allResults: Event[],
-  overallPoints: Points[],
+  allResults?: Event[],
+  overallPoints?: Points[],
   setResults: React.Dispatch<React.SetStateAction<Event[]>>
   setEventPoints?: React.Dispatch<React.SetStateAction<Points[]>>
   setOverallPoints?: React.Dispatch<React.SetStateAction<Points[]>>
@@ -79,7 +77,7 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
         [field]: value
       };
       setResults(updatedResults);
-      console.log('updatedResults', updatedResults);
+      // console.log('updatedResults', updatedResults);
     }
   }
 
@@ -98,7 +96,7 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
   const handleSubmit = async () => {
     try {
       for (const item of results) {
-        console.log('item', item)
+        // console.log('item', item)
         if (typeof item.id === 'string') {
           const { error } = await supabase
             .from('swims')
@@ -110,7 +108,7 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
               points: item.points
             })
           if (error) throw error
-          console.log('string', item)
+          // console.log('string', item)
         } else {
           const { error } = await supabase
             .from('swims')
@@ -123,7 +121,7 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
             })
             .eq('id', item.id)
           if (error) throw error
-          console.log('int', item)
+          // console.log('int', item)
         }
       }
       setEditMode(false)
@@ -155,7 +153,7 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
       setEventPoints(facultyPoints);
     }
 
-    if (setOverallPoints) {
+    if (setOverallPoints && allResults) {
       const eventId = results[0].event_id;
       const filteredEvents = allResults.filter(item => item.event_id !== eventId);
       const updatedEvents = [...filteredEvents, ...dataWithPoints];
@@ -168,7 +166,6 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
       })).sort((a, b) => b.points - a.points);
 
       setOverallPoints(overallFacultyPoints);
-
     }
 
 
