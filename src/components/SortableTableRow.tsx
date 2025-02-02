@@ -89,7 +89,7 @@ export function SortableTableRow({ event, index, editMode, isEvent, handleSave, 
                         <Trash2 className="h-4 w-4" />
                     </Button>
                 ) : (
-                    event.time && event.points !== undefined ? event.points : "-"
+                    event.time || event.points !== undefined ? event.points : "-"
                 )}
             </TableCell>
         </TableRow>

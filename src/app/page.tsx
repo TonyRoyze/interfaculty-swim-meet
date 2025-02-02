@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { EventLeaderboard } from "@/components/eventLeaderboard2";
+import { EventLeaderboard } from "@/components/eventLeaderboard";
 import Header from "@/components/header";
 import { EventSelector } from "@/components/eventselector";
 import { supabase } from "@/lib/supabase";
@@ -44,23 +44,6 @@ export default function Home() {
 
         setOverallPoints(facultyPoints);
 
-        // const menPoints = FACULTY_OPTIONS.map(faculty => ({
-        //     name: faculty.key,
-        //     points: data
-        //         .filter(item => item.faculty_id === faculty.id && item.event_id === menEventId)
-        //         .reduce((sum, item) => sum + (item.points || 0), 0)
-        // })).sort((a, b) => b.points - a.points);
-
-        // setMenPoints(menPoints)
-
-        // const womenPoints = FACULTY_OPTIONS.map(faculty => ({
-        //     name: faculty.key,
-        //     points: data
-        //         .filter(item => item.faculty_id === faculty.id && item.event_id === womenEventId)
-        //         .reduce((sum, item) => sum + (item.points || 0), 0)
-        // })).sort((a, b) => b.points - a.points);
-        // setWomenPoints(womenPoints)
-
         const menResults = data.filter(item => item.event_id === menEventId);
         setMenResults(menResults);
         const womenResults = data.filter(item => item.event_id === womenEventId);
@@ -70,7 +53,7 @@ export default function Home() {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [selectedEvent]);
 
     return (
         <div className="flex flex-col">
@@ -86,23 +69,25 @@ export default function Home() {
                         <TabsContent value="men">
                             <EventLeaderboard
                                 selectedEvent={selectedEvent}
-                                results={menResults}
-                                allResults={allResults}
-                                setResults={setMenResults}
-                                setEventPoints={setEventPoints}
-                                overallPoints={overallPoints}
-                                setOverallPoints={setOverallPoints}
+                                type="men"
+                            // results={menResults}
+                            // allResults={allResults}
+                            // setResults={setMenResults}
+                            // setEventPoints={setEventPoints}
+                            // overallPoints={overallPoints}
+                            // setOverallPoints={setOverallPoints}
                             />
                         </TabsContent>
                         <TabsContent value="women">
                             <EventLeaderboard
                                 selectedEvent={selectedEvent}
-                                results={menResults}
-                                allResults={allResults}
-                                setResults={setMenResults}
-                                setEventPoints={setEventPoints}
-                                overallPoints={overallPoints}
-                                setOverallPoints={setOverallPoints}
+                                type="women"
+                            // results={womenResults}
+                            // allResults={allResults}
+                            // setResults={setMenResults}
+                            // setEventPoints={setEventPoints}
+                            // overallPoints={overallPoints}
+                            // setOverallPoints={setOverallPoints}
                             />
                         </TabsContent>
                     </Tabs>
