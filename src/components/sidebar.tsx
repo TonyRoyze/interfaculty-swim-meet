@@ -1,21 +1,25 @@
 'use client';
-import {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
     BarChart2,
     UsersRound,
     LayoutDashboard,
     CircleSlash,
+    SquareDashedKanban
 } from "lucide-react";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip";
-import {useRouter} from "next/navigation";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useRouter } from "next/navigation";
 
-export default function Sidebar(){
+export default function Sidebar() {
     const route = useRouter();
     const goToDash = () => {
         route.push("/dashboard");
     }
     const goToFaculty = () => {
         route.push("/faculty");
+    }
+    const goToLanes = () => {
+        route.push("/lanes");
     }
     const goToSwimmer = () => {
         route.push("/");
@@ -27,7 +31,7 @@ export default function Sidebar(){
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button className="hidden md:flex" onClick={goToDash} variant="outline" size="icon" aria-label="Home">
-                                <LayoutDashboard className="size-5"/>
+                                <LayoutDashboard className="size-5" />
                             </Button>
 
                         </TooltipTrigger>
@@ -37,11 +41,27 @@ export default function Sidebar(){
                     </Tooltip>
                 </TooltipProvider>
                 <Button className="md:hidden" variant="outline" size="icon" aria-label="Home">
-                    <CircleSlash className="size-5"/>
+                    <CircleSlash className="size-5" />
                 </Button>
             </div>
             <nav className="grid gap-1 p-2">
                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                onClick={goToLanes}
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-lg"
+                                aria-label="Lanes"
+                            >
+                                <SquareDashedKanban className="size-5" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Lanes</p>
+                        </TooltipContent>
+                    </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
@@ -51,7 +71,7 @@ export default function Sidebar(){
                                 className="rounded-lg"
                                 aria-label="Faculty Leaderboard"
                             >
-                                <BarChart2 className="size-5"/>
+                                <BarChart2 className="size-5" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -67,7 +87,7 @@ export default function Sidebar(){
                                 className="rounded-lg"
                                 aria-label="Event Leaderboard"
                             >
-                                <UsersRound className="size-5"/>
+                                <UsersRound className="size-5" />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>

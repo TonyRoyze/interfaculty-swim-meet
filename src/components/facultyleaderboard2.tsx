@@ -11,14 +11,11 @@ import { Badge } from "@/components/ui/badge";
 
 
 interface FacultyLeaderboardProps {
-    type?: 'overall' | 'men' | 'women';
-    leaderboard: 'event' | 'overall'
-    selectedEvent?: string
     data?: any[]
 }
 
 
-export function FacultyLeaderboard({ type, leaderboard, selectedEvent, data }: FacultyLeaderboardProps) {
+export function FacultyLeaderboard({ data }: FacultyLeaderboardProps) {
 
     return (
         <Table>
@@ -38,7 +35,7 @@ export function FacultyLeaderboard({ type, leaderboard, selectedEvent, data }: F
                                 {faculty.name}
                             </Badge>
                         </TableCell>
-                        <TableCell className="px-3 text-xs md:text-sm md:px-4">{faculty.points}</TableCell>
+                        <TableCell className="px-3 text-xs md:text-sm md:px-4">{faculty.points / 10}</TableCell>
                     </TableRow>) : null
                 ))}
             </TableBody>
