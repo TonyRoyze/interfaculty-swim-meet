@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { FacultyLeaderboard } from "@/components/facultyleaderboard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EventLeaderboard } from "@/components/eventLeaderboard"
@@ -21,8 +21,7 @@ export default function Home() {
     const [menResults, setMenResults] = useState<Event[]>([]);
     const [womenResults, setWomenResults] = useState<Event[]>([]);
 
-    const fetchData = async () => {
-
+    const fetchData = useCallback(async () => {
         const { data, error } = await supabase
             .from('swims')
             .select('*')
@@ -73,12 +72,11 @@ export default function Home() {
         setMenResults(menResults);
         const womenResults = sortedData.filter(item => item.event_id === womenEventId);
         setWomenResults(womenResults);
-    }
-
+    }, [selectedEvent]); // Add selectedEvent as a dependency since it's used inside fetchData
 
     useEffect(() => {
         fetchData();
-    }, [selectedEvent]);
+    }, [fetchData]); // Update dependency array to include fetchData
 
     return (
         <div className="flex flex-col">

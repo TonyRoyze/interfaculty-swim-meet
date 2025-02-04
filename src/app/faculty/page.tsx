@@ -4,7 +4,7 @@ import Header from "@/components/header";
 import { FacultyLeaderboard } from "@/components/facultyleaderboard2";
 import { supabase } from "@/lib/supabase"; ``
 import { FACULTY_OPTIONS } from "@/types/constants";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 
 
@@ -13,7 +13,7 @@ export default function Home() {
     const [overallPoints, setOverallPoints] = useState<any[]>([]);
     const [menPoints, setMenPoints] = useState<any[]>([]);
     const [womenPoints, setWomenPoints] = useState<any[]>([]);
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
 
         const { data, error } = await supabase
             .from('swims')
@@ -52,11 +52,11 @@ export default function Home() {
 
         setWomenPoints(womenData)
 
-    };
+    }, []);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
     return (
         <div className="flex flex-col">
             <Header />
@@ -69,13 +69,13 @@ export default function Home() {
                             <TabsTrigger className="text-xs md:text-sm" value="women">Women</TabsTrigger>
                         </TabsList>
                         <TabsContent value="overall">
-                            <FacultyLeaderboard data={overallPoints} type="overall" leaderboard="overall" />
+                            <FacultyLeaderboard data={overallPoints} />
                         </TabsContent>
                         <TabsContent value="men">
-                            <FacultyLeaderboard data={menPoints} type="men" leaderboard="overall" />
+                            <FacultyLeaderboard data={menPoints} />
                         </TabsContent>
                         <TabsContent value="women">
-                            <FacultyLeaderboard data={womenPoints} type="women" leaderboard="overall" />
+                            <FacultyLeaderboard data={womenPoints} />
                         </TabsContent>
                     </Tabs>
                 </div>

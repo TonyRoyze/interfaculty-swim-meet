@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/header";
 import { EventSelector } from "@/components/eventselector";
@@ -19,7 +19,7 @@ export default function Home() {
     const [womenResults, setWomenResults] = useState<Event[]>([]);
     // const [allResults, setAllResults] = useState<Event[]>([]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
 
         const { data, error } = await supabase
             .from('swims')
@@ -65,13 +65,12 @@ export default function Home() {
         setMenResults(menResults);
         const womenResults = data.filter(item => item.event_id === womenEventId);
         setWomenResults(womenResults);
-    }
+    }, [selectedEvent]);
 
 
     useEffect(() => {
         fetchData();
-    }, [selectedEvent]);
-
+    }, [fetchData]);
     return (
         <div className="flex flex-col">
             <Header />
