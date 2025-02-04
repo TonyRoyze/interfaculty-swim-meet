@@ -15,7 +15,7 @@ export const calculatePoints = (sortedData: Event[]): Event[] => {
 
   // console.log(isRelay);
 
-  const pointsArray = isRelay ? [10, 7, 5, 4, 3, 2, 1] : [7, 5, 4, 3, 2, 1]
+  const pointsArray = isRelay ? [100, 70, 50, 40, 30, 20, 10] : [70, 50, 40, 30, 20, 10]
 
   const timeGroups: { [key: string]: Event[] } = {}
   sortedData.forEach(event => {

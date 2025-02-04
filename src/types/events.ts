@@ -5,6 +5,8 @@ export interface Event {
     name: string
     time: string
     points?: number
+    heat?: number
+    lane?: number
 }
 
 export interface Points {
