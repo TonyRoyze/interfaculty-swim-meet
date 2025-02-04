@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,105 +10,28 @@ import { Event } from "@/types/events"
 import { FACULTY_OPTIONS, EVENTS } from "@/types/constants"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { supabase } from "@/lib/supabase"
-
-
-const calculatePoints = (sortedData: Event[]): Event[] => {
-    // Check if event is relay by looking at the first event's event_id
-    const isRelay = sortedData[0]?.event_id ?
-        EVENTS.find(e => e.id === sortedData[0].event_id)?.key.toLowerCase().includes('relay') :
-        false;
-
-    const pointsArray = isRelay ? [10, 7, 5, 4, 3, 2, 1] : [7, 5, 4, 3, 2, 1]
-
-    const timeGroups: { [key: string]: Event[] } = {}
-    sortedData.forEach(event => {
-        if (!timeGroups[event.time]) {
-            timeGroups[event.time] = []
-        }
-        timeGroups[event.time].push(event)
-    })
-
-    let currentIndex = 0
-    return sortedData.map(item => {
-        const sameTimeEvents = timeGroups[item.time]
-        if (sameTimeEvents.length > 1) {
-            // Calculate average points for tied positions
-            const startIndex = currentIndex
-            const endIndex = currentIndex + sameTimeEvents.length - 1
-            let totalPoints = 0
-
-            // Sum up points for the positions
-            for (let i = startIndex; i <= endIndex && i < pointsArray.length; i++) {
-                totalPoints += pointsArray[i] || 0
-            }
-
-            // Calculate average points
-            const averagePoints = totalPoints / sameTimeEvents.length
-
-            if (sameTimeEvents[sameTimeEvents.length - 1] === item) {
-                currentIndex += sameTimeEvents.length
-            }
-
-            return {
-                ...item,
-                points: averagePoints
-            }
-        } else {
-            const points = currentIndex < pointsArray.length ? pointsArray[currentIndex] : 0
-            currentIndex++
-            return {
-                ...item,
-                points
-            }
-        }
-    })
-}
+import { calculatePoints } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 interface EventLeaderboardProps {
     selectedEvent: string,
-    type: 'men' | 'women',
+    results: Event[],
+    allResults?: Event[],
+    // overallPoints?: Points[],
+    setResults: React.Dispatch<React.SetStateAction<Event[]>>
+    // setEventPoints?: React.Dispatch<React.SetStateAction<Points[]>>
+    // setOverallPoints?: React.Dispatch<React.SetStateAction<Points[]>>
 }
 
-export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps) {
+export function EventLeaderboard({ selectedEvent, results, setResults }: EventLeaderboardProps) {
+    const { toast } = useToast()
     const isEvent = !selectedEvent.includes('relay');
     const [editMode, setEditMode] = useState(false)
-    const [results, setResults] = useState<Event[]>([])
 
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const eventId = type == 'men'
-                ? EVENTS.find((event) => event.key === `M${selectedEvent}`)?.id
-                : EVENTS.find((event) => event.key === `W${selectedEvent}`)?.id;
-
-            const { data, error } = await supabase
-                .from('swims')
-                .select('*')
-                .eq('event_id', eventId)
-                .order('time', { ascending: true })
-
-            if (error) {
-                console.error('Error fetching data:', error)
-                return
-            }
-
-            // Sort and calculate points before setting state
-            const sortedData = [...data].sort((a, b) => {
-                const timeA = a.time.split(":").reduce((acc: number, time: string) => acc * 60 + parseFloat(time), 0);
-                const timeB = b.time.split(":").reduce((acc: number, time: string) => acc * 60 + parseFloat(time), 0);
-                return timeA - timeB
-            })
-            const dataWithPoints = calculatePoints(sortedData)
-            setResults(dataWithPoints)
-            console.log("Fetched Data", dataWithPoints)
-        }
-        fetchData()
-    }, [selectedEvent, type])
 
     const handleAdd = async () => {
-        const eventId = type === 'men'
-            ? EVENTS.find((event) => event.key === `M${selectedEvent}`)?.id
-            : EVENTS.find((event) => event.key === `W${selectedEvent}`)?.id
+        const eventId = results[0].event_id;
+
 
         const newRow = {
             id: crypto.randomUUID(),
@@ -136,11 +59,9 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
     }
 
     const handleRemove = async (id: string) => {
-        if (typeof id === 'string') {
-            const updatedResults = results.filter(item => item.id !== id)
-            setResults(updatedResults)
-        }
-        else {
+        const updatedResults = results.filter(item => item.id !== id)
+        setResults(updatedResults)
+        if (typeof id === 'number') {
             const { error } = await supabase
                 .from('swims')
                 .delete()
@@ -165,7 +86,7 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
                             points: item.points
                         })
                     if (error) throw error
-                    console.log('string', item)
+                    // console.log('string', item)
                 } else {
                     const { error } = await supabase
                         .from('swims')
@@ -181,8 +102,18 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
                 }
             }
             setEditMode(false)
+            toast({
+                title: "Success",
+                description: "Results have been submitted successfully",
+                variant: "default",
+            })
         } catch (error) {
             console.error('Error submitting data:', error)
+            toast({
+                title: "Error",
+                description: "Failed to submit results. Please try again.",
+                variant: "destructive",
+            })
         }
     }
 
@@ -305,7 +236,7 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     ) : (
-                                        event.time && event.points !== undefined ? event.points : "-"
+                                        event.time && event.points !== undefined ? event.points / 10 : "-"
                                     )}
                                 </TableCell>
                             </TableRow>
@@ -327,3 +258,4 @@ export function EventLeaderboard({ selectedEvent, type }: EventLeaderboardProps)
         </div>
     );
 }
+

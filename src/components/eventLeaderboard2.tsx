@@ -1,12 +1,10 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableRow, TableHeader, TableHead } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Plus, Edit, Save, Upload } from "lucide-react"
-import { Event, Points } from "@/types/events"
-import { calculatePoints } from "@/lib/utils"
-import { FACULTY_OPTIONS } from "@/types/constants"
+import { Event } from "@/types/events"
 import { supabase } from "@/lib/supabase"
 import {
   DndContext,
@@ -22,38 +20,92 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-
-import { EventTableHeader } from "./eventTableHeader"
-import { SortableTableRow } from "./sortableTableRow"
+import { useToast } from "@/hooks/use-toast"
+import { SortableTableRow } from "./sortableTableRow2"
 
 interface EventLeaderboardProps {
   selectedEvent: string,
   results: Event[],
-  allResults?: Event[],
-  overallPoints?: Points[],
+  // allResults?: Event[],
+  // overallPoints?: Points[],
   setResults: React.Dispatch<React.SetStateAction<Event[]>>
-  setEventPoints?: React.Dispatch<React.SetStateAction<Points[]>>
-  setOverallPoints?: React.Dispatch<React.SetStateAction<Points[]>>
+  // setEventPoints?: React.Dispatch<React.SetStateAction<Points[]>>
+  // setOverallPoints?: React.Dispatch<React.SetStateAction<Points[]>>
 }
 
-export function EventLeaderboard({ selectedEvent, allResults, results, setResults, setEventPoints, overallPoints, setOverallPoints }: EventLeaderboardProps) {
+export function EventLeaderboard({ selectedEvent, results, setResults }: EventLeaderboardProps) {
   const isEvent = !selectedEvent.includes('relay');
   const [editMode, setEditMode] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [heats, setHeats] = useState<Event[]>([])
+  const { toast } = useToast()
 
   useEffect(() => {
-    const facultyPoints = FACULTY_OPTIONS.map(faculty => ({
-      name: faculty.key,
-      points: results
-        .filter(item => item.faculty_id === faculty.id)
-        .reduce((sum, item) => sum + (item.points || 0), 0)
-    })).sort((a, b) => b.points - a.points);
-    if (setEventPoints) {
-      setEventPoints(facultyPoints);
+    const unassignedResults = results.filter(
+      (event) => event.heat === null
+    )
+    const assignedResults = results.filter(
+      (event) => event.heat !== null
+    ).sort((a, b) => {
+      if (!a.heat && !b.heat) {
+        return 1;
+      }
+      if (!a.heat) return 1;
+      if (!b.heat) return -1;
+      if (a.heat !== b.heat) {
+        return a.heat - b.heat;
+      }
+      if (!a.lane && !b.lane) {
+        return 0;
+      }
+      if (!a.lane) return 1;
+      if (!b.lane) return -1;
+      return a.lane - b.lane;
+    });
+
+    // Fill in missing lanes for each heat
+    const maxHeat = Math.max(...assignedResults.map(r => r.heat || 0));
+    const filledResults = [];
+
+    for (let heat = 1; heat <= maxHeat; heat++) {
+      const heatResults = assignedResults.filter(r => r.heat === heat);
+      const existingLanes = heatResults.map(r => r.lane);
+
+      // Add existing results
+      filledResults.push(...heatResults);
+
+      // Add empty results for missing lanes
+      for (let lane = 1; lane <= 6; lane++) {
+        if (!existingLanes.includes(lane)) {
+          filledResults.push({
+            id: crypto.randomUUID(),
+            event_id: results[0].event_id,
+            faculty_id: 1,
+            name: "",
+            time: "",
+            points: 0,
+            heat: heat,
+            lane: lane
+          });
+        }
+      }
     }
-  }, [results]);
+
+    // Sort by heat and lane
+    filledResults.sort((a, b) => {
+      if (!a.heat || !b.heat) return 0;
+      if (a.heat !== b.heat) return a.heat - b.heat;
+      if (!a.lane || !b.lane) return 0;
+      return a.lane - b.lane;
+    });
+    // console.log("Filled", filledResults)
+    // console.log("Assigned", assignedResults)
+    // console.log("Unassigned", unassignedResults)
+    setHeats([...filledResults, ...unassignedResults]);
+  }, [selectedEvent, results]);
 
   const handleAdd = async () => {
-    const eventId = results[0].event_id;
+    const eventId = heats[0].event_id;
 
     const newRow = {
       id: crypto.randomUUID(),
@@ -63,12 +115,12 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
       time: "",
       points: 0,
     }
-    setResults([...results, newRow])
+    setHeats([...heats, newRow])
   }
 
   const handleSave = (id: string, field: string, value?: string | number) => {
 
-    const updatedResults = [...results];
+    const updatedResults = [...heats];
     const itemIndex = updatedResults.findIndex(item => item.id === id);
 
     if (itemIndex !== -1) {
@@ -76,13 +128,14 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
         ...updatedResults[itemIndex],
         [field]: value
       };
-      setResults(updatedResults);
+      setHeats(updatedResults);
       // console.log('updatedResults', updatedResults);
     }
   }
 
   const handleRemove = async (id: string) => {
-    const updatedResults = results.filter(item => item.id !== id)
+    const updatedResults = heats.filter(item => item.id !== id)
+    setHeats(updatedResults)
     setResults(updatedResults)
     if (typeof id === 'number') {
       const { error } = await supabase
@@ -94,22 +147,10 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
   }
 
   const handleSubmit = async () => {
+    setIsSubmitting(true)
     try {
-      for (const item of results) {
-        // console.log('item', item)
-        if (typeof item.id === 'string') {
-          const { error } = await supabase
-            .from('swims')
-            .insert({
-              event_id: item.event_id,
-              faculty_id: item.faculty_id,
-              name: item.name,
-              time: item.time,
-              points: item.points
-            })
-          if (error) throw error
-          // console.log('string', item)
-        } else {
+      await Promise.all(heats.map(async (item, index) => {
+        if (typeof item.id === 'number') {
           const { error } = await supabase
             .from('swims')
             .update({
@@ -117,58 +158,33 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
               faculty_id: item.faculty_id,
               name: item.name,
               time: item.time,
-              points: item.points
+              points: item.points,
+              heat: Math.floor(index / 6) + 1,
+              lane: (index + 1) % 6 === 0 ? (6) : (index + 1) % 6,
             })
             .eq('id', item.id)
           if (error) throw error
-          // console.log('int', item)
         }
-      }
+      }));
+
+      toast({
+        title: "Success",
+        description: "Results have been updated successfully",
+      })
       setEditMode(false)
     } catch (error) {
       console.error('Error submitting data:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update results",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const handleSaveChanges = () => {
-    const dataWithPoints = calculatePoints(results);
-    setResults(dataWithPoints);
-
-    const facultyPoints = FACULTY_OPTIONS.map(faculty => ({
-      name: faculty.key,
-      points: dataWithPoints
-        .filter(item => item.faculty_id === faculty.id)
-        .reduce((sum, item) => sum + (item.points || 0), 0)
-    })).sort((a, b) => b.points - a.points);
-
-    //TODO: update points for faculty
-
-    //   const sortedData = [...results].sort((a, b) => {
-    //     const timeA = a.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
-    //     const timeB = b.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
-    //     return timeA - timeB
-    // })
-
-    if (setEventPoints) {
-      setEventPoints(facultyPoints);
-    }
-
-    if (setOverallPoints && allResults) {
-      const eventId = results[0].event_id;
-      const filteredEvents = allResults.filter(item => item.event_id !== eventId);
-      const updatedEvents = [...filteredEvents, ...dataWithPoints];
-
-      const overallFacultyPoints = FACULTY_OPTIONS.map(faculty => ({
-        name: faculty.key,
-        points: updatedEvents
-          .filter(item => item.faculty_id === faculty.id)
-          .reduce((sum, item) => sum + (item.points || 0), 0)
-      })).sort((a, b) => b.points - a.points);
-
-      setOverallPoints(overallFacultyPoints);
-    }
-
-
     setEditMode(false);
   };
 
@@ -182,7 +198,7 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     if (active.id !== over.id) {
-      setResults((items) => {
+      setHeats((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
@@ -205,8 +221,13 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
             <Edit className="h-4 w-4 mr-2" /> Edit
           </Button>
         )}
-        <Button variant="outline" onClick={handleSubmit}>
-          <Upload className="h-4 w-4 mr-2" />Submit
+        <Button
+          variant="outline"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          {isSubmitting ? "Submitting..." : "Submit"}
         </Button>
       </div>
 
@@ -216,23 +237,58 @@ export function EventLeaderboard({ selectedEvent, allResults, results, setResult
         onDragEnd={handleDragEnd}
       >
         <Table>
-          <EventTableHeader isEvent={isEvent} editMode={editMode} />
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-2 text-xs md:text-sm md:px-4">
+                Lane
+              </TableHead>
+              <TableHead className="px-2 text-xs md:text-sm md:px-4">
+                Faculty
+              </TableHead>
+              {isEvent && (
+                <TableHead className="px-2 text-xs md:text-sm md:px-4">
+                  Name
+                </TableHead>
+              )}
+              {!editMode ? (
+                <TableHead className="px-2 text-xs md:text-sm md:px-4">
+                  Points
+                </TableHead>
+              ) : (
+                <TableHead className="px-2 text-xs md:text-sm md:px-4" colSpan={2}>
+                  Actions
+                </TableHead>
+              )}
+            </TableRow>
+          </TableHeader>
           <TableBody>
-            {Array.isArray(results) ? (
+            {Array.isArray(heats) ? (
               <SortableContext
-                items={results.map(event => event.id)}
+                items={heats.map(event => event.id)}
                 strategy={verticalListSortingStrategy}
               >
-                {results.map((event, index) => (
-                  <SortableTableRow
-                    key={event.id}
-                    event={event}
-                    index={index}
-                    editMode={editMode}
-                    isEvent={isEvent}
-                    handleSave={handleSave}
-                    handleRemove={handleRemove}
-                  />
+                {heats.map((event, index) => (
+                  <React.Fragment key={event.id}>
+                    {index % 6 === 0 && (
+                      <TableRow className="bg-muted/50">
+                        <TableCell
+                          colSpan={4}
+                          className="px-4 py-2 text-md md:text-xl font-bold"
+                        >
+                          Heat {event.heat}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    <SortableTableRow
+                      key={event.id}
+                      event={event}
+                      index={index}
+                      editMode={editMode}
+                      isEvent={isEvent}
+                      handleSave={handleSave}
+                      handleRemove={handleRemove}
+                    />
+                  </React.Fragment>
                 ))}
               </SortableContext>
             ) : (

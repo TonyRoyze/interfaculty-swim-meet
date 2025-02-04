@@ -24,12 +24,19 @@ export default function Home() {
         const { data, error } = await supabase
             .from('swims')
             .select('*')
-            .order('points', { ascending: false });
+            .order('time', { ascending: true });
 
         if (error) {
             console.error('Error fetching data:', error)
             return
         }
+
+        const sortedData = [...data].sort((a, b) => {
+            const timeA = a.time.split(":").reduce((acc: number, time: string) => acc * 60 + Number.parseFloat(time), 0)
+            const timeB = b.time.split(":").reduce((acc: number, time: string) => acc * 60 + Number.parseFloat(time), 0)
+            return timeA - timeB
+        })
+        setAllResults(sortedData);
 
         const menEventId = EVENTS.find((event) => event.key === `M${selectedEvent}`)?.id;
         const womenEventId = EVENTS.find((event) => event.key === `W${selectedEvent}`)?.id;
@@ -37,16 +44,16 @@ export default function Home() {
 
         const facultyPoints = FACULTY_OPTIONS.map(faculty => ({
             name: faculty.key,
-            points: data
+            points: sortedData
                 .filter(item => item.faculty_id === faculty.id)
                 .reduce((sum, item) => sum + (item.points || 0), 0)
         })).sort((a, b) => b.points - a.points);
 
         setOverallPoints(facultyPoints);
 
-        const menResults = data.filter(item => item.event_id === menEventId);
+        const menResults = sortedData.filter(item => item.event_id === menEventId);
         setMenResults(menResults);
-        const womenResults = data.filter(item => item.event_id === womenEventId);
+        const womenResults = sortedData.filter(item => item.event_id === womenEventId);
         setWomenResults(womenResults);
     }
 
@@ -69,10 +76,10 @@ export default function Home() {
                         <TabsContent value="men">
                             <EventLeaderboard
                                 selectedEvent={selectedEvent}
-                                type="men"
-                            // results={menResults}
-                            // allResults={allResults}
-                            // setResults={setMenResults}
+
+                                results={menResults}
+                                allResults={allResults}
+                                setResults={setMenResults}
                             // setEventPoints={setEventPoints}
                             // overallPoints={overallPoints}
                             // setOverallPoints={setOverallPoints}
@@ -81,10 +88,9 @@ export default function Home() {
                         <TabsContent value="women">
                             <EventLeaderboard
                                 selectedEvent={selectedEvent}
-                                type="women"
-                            // results={womenResults}
-                            // allResults={allResults}
-                            // setResults={setMenResults}
+                                results={womenResults}
+                                allResults={allResults}
+                                setResults={setMenResults}
                             // setEventPoints={setEventPoints}
                             // overallPoints={overallPoints}
                             // setOverallPoints={setOverallPoints}
