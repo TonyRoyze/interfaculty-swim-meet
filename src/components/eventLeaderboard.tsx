@@ -119,6 +119,7 @@ export function EventLeaderboard({ selectedEvent, results, setResults }: EventLe
 
 
     const handleSaveChanges = () => {
+        console.log(results);
         const sortedData = [...results].sort((a, b) => {
             const timeA = a.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
             const timeB = b.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)

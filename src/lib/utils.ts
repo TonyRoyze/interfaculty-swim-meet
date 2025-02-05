@@ -13,12 +13,14 @@ export const calculatePoints = (sortedData: Event[]): Event[] => {
     EVENTS.find(e => e.id === sortedData[0].event_id)?.key.toLowerCase().includes('relay') :
     false;
 
-  // console.log(isRelay);
-
   const pointsArray = isRelay ? [100, 70, 50, 40, 30, 20, 10] : [70, 50, 40, 30, 20, 10]
 
+  // Filter out empty times and group the rest
   const timeGroups: { [key: string]: Event[] } = {}
   sortedData.forEach(event => {
+    if (!event.time) {
+      return; // Skip empty times
+    }
     if (!timeGroups[event.time]) {
       timeGroups[event.time] = []
     }
@@ -27,6 +29,14 @@ export const calculatePoints = (sortedData: Event[]): Event[] => {
 
   let currentIndex = 0
   return sortedData.map(item => {
+    // Return early with 0 points if time is empty
+    if (!item.time) {
+      return {
+        ...item,
+        points: 0
+      }
+    }
+
     const sameTimeEvents = timeGroups[item.time]
     if (sameTimeEvents.length > 1) {
       // Calculate average points for tied positions
