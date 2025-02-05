@@ -32,6 +32,8 @@ export default function Home() {
         }
 
         const sortedData = [...data].sort((a, b) => {
+            if (!a.time) return 1
+            if (!b.time) return -1
             const timeA = a.time.split(":").reduce((acc: number, time: string) => acc * 60 + Number.parseFloat(time), 0)
             const timeB = b.time.split(":").reduce((acc: number, time: string) => acc * 60 + Number.parseFloat(time), 0)
             return timeA - timeB
