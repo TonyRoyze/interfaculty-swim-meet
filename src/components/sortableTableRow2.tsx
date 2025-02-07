@@ -49,7 +49,7 @@ export function SortableTableRow({ event, index, editMode, isEvent, handleSave, 
                         {(event as Event).name}
                     </TableCell>
                     <TableCell className="lg:hidden px-2 text-xs md:text-sm md:px-4">
-                        {(event as Event).name.split(" ")[0]}
+                        {(event as Event).name.split(" ")[1]}
                     </TableCell>
                 </>
             )}
