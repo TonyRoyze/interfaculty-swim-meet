@@ -26,6 +26,7 @@ interface EventLeaderboardProps {
 export function EventLeaderboard({ selectedEvent, results, setResults }: EventLeaderboardProps) {
     const { toast } = useToast()
     const isEvent = !selectedEvent.includes('relay');
+    const [isSubmitting, setIsSubmitting] = useState(false)
     const [editMode, setEditMode] = useState(false)
 
 
@@ -72,6 +73,7 @@ export function EventLeaderboard({ selectedEvent, results, setResults }: EventLe
     }
 
     const handleSubmit = async () => {
+        setIsSubmitting(true)
         try {
             for (const item of results) {
 
@@ -114,6 +116,8 @@ export function EventLeaderboard({ selectedEvent, results, setResults }: EventLe
                 description: "Failed to submit results. Please try again.",
                 variant: "destructive",
             })
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
@@ -121,9 +125,12 @@ export function EventLeaderboard({ selectedEvent, results, setResults }: EventLe
     const handleSaveChanges = () => {
         console.log(results);
         const sortedData = [...results].sort((a, b) => {
-            const timeA = a.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
-            const timeB = b.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
-            return timeA - timeB
+            if (a.time && b.time) {
+                const timeA = a.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
+                const timeB = b.time.split(":").reduce((acc, time) => acc * 60 + Number.parseFloat(time), 0)
+                return timeA - timeB
+            }
+            return 0
         })
 
         const dataWithPoints = calculatePoints(sortedData)
@@ -139,15 +146,19 @@ export function EventLeaderboard({ selectedEvent, results, setResults }: EventLe
                         <Button variant="outline" onClick={handleSaveChanges}>
                             <Save className="h-4 w-4 mr-2" /> Save
                         </Button>
-
                     </>
                 ) : (
                     <Button variant="outline" onClick={() => setEditMode(true)}>
                         <Edit className="h-4 w-4 mr-2" /> Edit
                     </Button>
                 )}
-                <Button variant="outline" onClick={handleSubmit}>
-                    <Upload className="h-4 w-4 mr-2" />Submit
+                <Button
+                    variant="outline"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isSubmitting ? "Submitting..." : "Submit"}
                 </Button>
             </div>
 
@@ -219,7 +230,7 @@ export function EventLeaderboard({ selectedEvent, results, setResults }: EventLe
                                             {editMode ? (
                                                 <Input value={(event as Event).name} onChange={(e) => handleSave(event.id, "name", e.target.value)} />
                                             ) : (
-                                                (event as Event).name.split(" ")[0]
+                                                (event as Event).name.split(" ")[1]
                                             )}
                                         </TableCell>
                                     </>

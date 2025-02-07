@@ -71,7 +71,7 @@ export function SortableTableRow({ event, index, editMode, isEvent, handleSave, 
                         {editMode ? (
                             <Input value={(event as Event).name} onChange={(e) => handleSave(event.id, "name", e.target.value)} />
                         ) : (
-                            (event as Event).name.split(" ")[0]
+                            (event as Event).name.split(" ")[1]
                         )}
                     </TableCell>
                 </>
